@@ -1,12 +1,39 @@
 const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
 
-app.get("/api/signup", (request, response) => {
-  response.json({ data: "You are ready to signup endpoint" });
-});
+// connect to database
+mongoose
+  .connect(process.env.DATABASE, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+  })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("Could not connect to MongoDB", err));
 
-const port = process.env.port || 8080;
+// import routes
+const authRoutes = require("./routes/auth");
+
+// app middleware
+app.use(morgan("dev"));
+app.use(bodyParser.json());
+// app.use(cors());    // allows all origins
+// TODO: COMMENT
+if ((process.env.NODE_DEV = "development")) {
+  app.use(cors({ origin: `${process.env.CLIENT_URL}` })); // http://localhost:3000
+}
+
+// route middleware
+app.use("/api", authRoutes);
+
+const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`API is running on port ${port}`);
+  console.log(`API is running on port ${port} - ${process.env.NODE_DEV}`);
 });
