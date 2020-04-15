@@ -17,11 +17,34 @@ const Signup = () => {
 
   // curry function to handle input change events
   const handleChange = (name) => (event) => {
-    //
+    setValues({ ...values, [name]: event.target.value });
   };
 
   const handleSubmit = (event) => {
-    //
+    event.preventDefault();
+    setValues({ ...values, buttonText: "Submitting" });
+    const config = {
+      method: "POST",
+      url: `${process.env.REACT_APP_API}/signup`,
+      data: { name, email, password },
+    };
+    axios(config)
+      .then((response) => {
+        console.log("SIGNUP SUCCESS", response);
+        setValues({
+          ...values,
+          name: "",
+          email: "",
+          password: "",
+          buttonText: "Submitted",
+        });
+        toast.success(response.data.message);
+      })
+      .catch((error) => {
+        console.log("SIGNUP ERROR", error.response.data);
+        setValues({ ...values, buttonText: "Submit" });
+        toast.error(error.response.data.error);
+      });
   };
 
   const signupForm = () => (
@@ -65,6 +88,7 @@ const Signup = () => {
     <Layout>
       <div className="col-md-6 offset-md-3">
         <ToastContainer />
+        {JSON.stringify({ name, email, password })}
         <h2 className="p-5 text-center">Signup</h2>
         {signupForm()}
       </div>
