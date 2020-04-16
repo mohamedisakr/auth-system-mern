@@ -35,10 +35,7 @@ const Activate = ({ match }) => {
     axios(config)
       .then((response) => {
         console.log("ACCOUNT ACTIVATION", response);
-        setValues({
-          ...values,
-          show: false,
-        });
+        setValues({ ...values, show: false });
         toast.success(response.data.message);
       })
       .catch((error) => {
@@ -60,7 +57,6 @@ const Activate = ({ match }) => {
     <Layout>
       <div className="col-md-6 offset-md-3">
         <ToastContainer />
-
         {activateLink()}
       </div>
     </Layout>

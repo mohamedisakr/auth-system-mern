@@ -2,8 +2,10 @@ import React, { useState } from "react";
 // import { Link, Redirect } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 import Layout from "../core/layout";
+import { authenticate, isAuthenticate } from "./helpers";
+import "react-toastify/dist/ReactToastify.min.css";
+import { Redirect } from "react-router-dom";
 
 const Signin = () => {
   const [values, setValues] = useState({
@@ -30,15 +32,16 @@ const Signin = () => {
     axios(config)
       .then((response) => {
         console.log("SIGNIN SUCCESS", response);
-        // save the response (user , token) local storage / cookie
-        setValues({
-          ...values,
-
-          email: "",
-          password: "",
-          buttonText: "Submitted",
+        // save the response, user ==>> local storage /  token ==>> cookie
+        authenticate(response, () => {
+          setValues({
+            ...values,
+            email: "",
+            password: "",
+            buttonText: "Submitted",
+          });
+          toast.success(`Hi ${response.data.user.name}, welcome back!`);
         });
-        toast.success(`Hi ${response.data.user.name}, welcome back!`);
       })
       .catch((error) => {
         console.log("SIGNIN ERROR", error.response.data);
@@ -79,7 +82,7 @@ const Signin = () => {
     <Layout>
       <div className="col-md-6 offset-md-3">
         <ToastContainer />
-        {JSON.stringify({ email, password })}
+        {isAuthenticate() ? <Redirect to="/" /> : null}
         <h2 className="p-5 text-center">Signin</h2>
         {signinForm()}
       </div>
