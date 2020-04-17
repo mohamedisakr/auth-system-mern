@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const expressJwt = require("express-jwt");
 const sendgridMail = require("@sendgrid/mail");
 
 sendgridMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -120,27 +121,4 @@ exports.signin = (request, response) => {
   });
 };
 
-/*
-// Signup user WITHOUT email confirmation
-exports.signup = (request, response) => {
-  // check if the user's email already exist in the database
-  const { name, email, password } = request.body;
-  User.findOne({ email }).exec((err, user) => {
-    if (user) {
-      response.status(400).json({ err: "Email is already exist." });
-    }
-  });
-
-  let newUser = new User({ name, email, password });
-  newUser.save((err, success) => {
-    if (err) {
-      console.log("Signup error", err);
-      response.status(400).json({ error: err });
-    }
-    response.json({
-      message: "Sign up success! Please sign in",
-    });
-  });
-};
-
-*/
+exports.requireSignin = expressJwt({ secret: process.env.JWT_SECRET });
