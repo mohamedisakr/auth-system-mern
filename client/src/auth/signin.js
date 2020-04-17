@@ -7,7 +7,7 @@ import { authenticate, isAuthenticate } from "./helpers";
 import "react-toastify/dist/ReactToastify.min.css";
 import { Redirect } from "react-router-dom";
 
-const Signin = () => {
+const Signin = ({ history }) => {
   const [values, setValues] = useState({
     email: "",
     password: "",
@@ -40,7 +40,10 @@ const Signin = () => {
             password: "",
             buttonText: "Submitted",
           });
-          toast.success(`Hi ${response.data.user.name}, welcome back!`);
+          // toast.success(`Hi ${response.data.user.name}, welcome back!`);
+          isAuthenticate() && isAuthenticate().role === "admin"
+            ? history.push("/admin")
+            : history.push("/private");
         });
       })
       .catch((error) => {

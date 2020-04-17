@@ -20,6 +20,7 @@ mongoose
 
 // import routes
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user");
 
 // app middleware
 app.use(morgan("dev"));
@@ -32,6 +33,7 @@ if ((process.env.NODE_DEV = "development")) {
 
 // route middleware
 app.use("/api", authRoutes);
+app.use("/api", userRoutes);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
