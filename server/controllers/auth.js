@@ -122,3 +122,20 @@ exports.signin = (request, response) => {
 };
 
 exports.requireSignin = expressJwt({ secret: process.env.JWT_SECRET });
+
+exports.adminMiddleware = (request, response, next) => {
+  User.findById({ _id: request.user._id }).exec((err, user) => {
+    if (err || !user) {
+      return response.status(400).json({ error: "User not found" });
+    }
+
+    if (user.role !== "admin") {
+      return response
+        .status(400)
+        .json({ error: "Admin resource. Access denied" });
+    }
+
+    request.profile = user;
+    next();
+  });
+};
