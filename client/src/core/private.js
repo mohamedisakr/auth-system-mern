@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-// import { isAuthenticate } from "../auth/helpers";
+import { isAuthenticate, getCookie, signout } from "../auth/helpers";
 import Layout from "../core/layout";
 import "react-toastify/dist/ReactToastify.min.css";
 
-const Private = () => {
+const Private = ({ history }) => {
   const [values, setValues] = useState({
     role: "",
     name: "",
@@ -13,6 +13,33 @@ const Private = () => {
     password: "",
     buttonText: "Submit",
   });
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = () => {
+    const config = {
+      method: "GET",
+      url: `${process.env.REACT_APP_API}/user/${isAuthenticate()._id}`,
+      headers: {
+        Authorization: `Bearer ${getCookie("token")}`,
+      },
+    };
+
+    axios(config)
+      .then((response) => {
+        console.log("PROFILE UPDATE", response);
+        const { role, name, email } = response.data;
+        setValues({ ...values, role, name, email });
+      })
+      .catch((error) => {
+        console.log("PRIVATE PROFILE UPDATE ERROR", error.response.data.error);
+        if (error.response.status === 401) {
+          signout(() => history.push("/"));
+        }
+      });
+  };
 
   const { role, name, email, password, buttonText } = values;
 
@@ -52,7 +79,12 @@ const Private = () => {
     <form>
       <div className="form-group">
         <label className="text-muted">Role:</label>
-        <input value={role} type="text" className="form-control" />
+        <input
+          defaultValue={role}
+          type="text"
+          className="form-control"
+          disabled
+        />
       </div>
       <div className="form-group">
         <label className="text-muted">Name:</label>
@@ -65,7 +97,12 @@ const Private = () => {
       </div>
       <div className="form-group">
         <label className="text-muted">Email:</label>
-        <input value={email} type="email" className="form-control" />
+        <input
+          defaultValue={email}
+          type="email"
+          className="form-control"
+          disabled
+        />
       </div>
       <div className="form-group">
         <label className="text-muted">Password:</label>
