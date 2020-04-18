@@ -45,17 +45,6 @@ exports.signup = (request, response) => {
         response.json({ message: `Could not get any response, ${err.message}` })
       );
   });
-
-  // let newUser = new User({ name, email, password });
-  // newUser.save((err, success) => {
-  //   if (err) {
-  //     console.log("Signup error", err);
-  //     response.status(400).json({ error: err });
-  //   }
-  //   response.json({
-  //     message: "Sign up success! Please sign in",
-  //   });
-  // });
 };
 
 exports.accountActivation = (request, response) => {
@@ -138,4 +127,48 @@ exports.adminMiddleware = (request, response, next) => {
     request.profile = user;
     next();
   });
+};
+
+exports.forgotPassword = (request, response) => {
+  const { email } = request.body;
+  User.findOne({ email }, (err, user) => {
+    if (err || !user) {
+      return response
+        .status(400)
+        .json({ error: "User with this email does not exist" });
+    }
+
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_RESET_PASSWORD, {
+      expiresIn: "10m",
+    });
+
+    const emailData = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: `Password reset confirmation`,
+      html: `
+              <h3>Please use the following link to reset your password</h3>
+              <p>${process.env.CLIENT_URL}/auth/password/reset/${token}</p>
+              <hr/>
+              <p>This email may contain sensetive information</p>
+              <p>${process.env.CLIENT_URL}</p>
+            `,
+    };
+
+    sendgridMail
+      .send(emailData)
+      .then((sent) => {
+        console.log("Signup email sent", sent);
+        return response.json({
+          message: `Email has been sent to ${email}. Follow the instruction to reset your password`,
+        });
+      })
+      .catch((err) =>
+        response.json({ message: `Could not get any response, ${err.message}` })
+      );
+  });
+};
+
+exports.resetPassword = (request, response) => {
+  //
 };
