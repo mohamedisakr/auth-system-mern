@@ -93,6 +93,12 @@ const Signup = () => {
         <h2 className="p-5 text-center">Signup</h2>
         {signupForm()}
       </div>
+      <Link
+        to="/auth/password/forgot"
+        className="btn btn-sm btn-outline-danger"
+      >
+        Forgot Password
+      </Link>
     </Layout>
   );
 };
