@@ -9,6 +9,7 @@ import Admin from "./core/admin";
 import PrivateRoute from "./auth/private-route";
 import AdminRoute from "./auth/admin-route";
 import ForgotPassword from "./auth/forgot-password";
+import ResetPassword from "./auth/reset-password";
 
 const Routes = () => {
   return (
@@ -21,6 +22,11 @@ const Routes = () => {
         <PrivateRoute path="/private" exact component={Private} />
         <AdminRoute path="/admin" exact component={Admin} />
         <Route path="/auth/password/forgot" exact component={ForgotPassword} />
+        <Route
+          path="/auth/password/reset/:token"
+          exact
+          component={ResetPassword}
+        />
       </Switch>
     </BrowserRouter>
   );
