@@ -2,6 +2,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const sendgridMail = require("@sendgrid/mail");
+var _ = require("lodash");
 
 sendgridMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -155,20 +156,70 @@ exports.forgotPassword = (request, response) => {
             `,
     };
 
-    sendgridMail
-      .send(emailData)
-      .then((sent) => {
-        console.log("Signup email sent", sent);
-        return response.json({
-          message: `Email has been sent to ${email}. Follow the instruction to reset your password`,
+    return user.updateOne({ resetPasswordLink: token }, (err, success) => {
+      if (err) {
+        console.log("RESET PASSWORD LINK ERROR", err);
+        return response.status(400).json({
+          error: "Database connection error on user password forgot request",
         });
-      })
-      .catch((err) =>
-        response.json({ message: `Could not get any response, ${err.message}` })
-      );
+      } else {
+        sendgridMail
+          .send(emailData)
+          .then((sent) => {
+            console.log("Signup email sent", sent);
+            return response.json({
+              message: `Email has been sent to ${email}. Follow the instruction to reset your password`,
+            });
+          })
+          .catch((err) =>
+            response.json({
+              message: `Could not get any response, ${err.message}`,
+            })
+          );
+      }
+    });
   });
 };
 
 exports.resetPassword = (request, response) => {
-  //
+  const { resetPasswordLink, newPassword } = request.body;
+  if (resetPasswordLink) {
+    jwt.verify(
+      resetPasswordLink,
+      process.env.JWT_RESET_PASSWORD,
+      (err, decoded) => {
+        if (err) {
+          return response.status(400).json({
+            error: "Expired link. Try again",
+          });
+        }
+
+        User.findOne({ resetPasswordLink }, (err, user) => {
+          if (err || !user) {
+            return response
+              .status(400)
+              .json({ error: "Something went wrong. Try later" });
+          }
+
+          const updatedFields = {
+            password: newPassword,
+            resetPasswordLink: "",
+          };
+
+          user = _.extend(user, updatedFields);
+
+          user.save((err, result) => {
+            if (err) {
+              return response
+                .status(400)
+                .json({ error: "Error resetting user password" });
+            }
+            response.json({
+              message: `Greet now you can login with your new password`,
+            });
+          });
+        });
+      }
+    );
+  }
 };
